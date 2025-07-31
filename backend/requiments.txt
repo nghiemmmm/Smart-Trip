@@ -1,0 +1,4 @@
+django 
+restfamework django
+psycopg2-binary
+django-cors-header
