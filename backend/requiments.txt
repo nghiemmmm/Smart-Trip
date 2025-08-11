@@ -1,4 +1,4 @@
-django 
-restfamework django
+django
+djangorestframework
 psycopg2-binary
-django-cors-header
+django-cors-headers
