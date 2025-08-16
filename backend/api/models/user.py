@@ -1,44 +1,46 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
-from django.contrib.auth.models import BaseUserManager
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 
 
 class UserManager(BaseUserManager):
-    """Helps Django work with our custom user model"""
+    """Custom manager cho User model (dùng email để login)"""
 
     use_in_migrations = True
 
-    def create_user(self, name, email, password=None):
-        """Creates a new user profile objects"""
-
+    def create_user(self, username, email, password=None, **extra_fields):
+        """Tạo user mới"""
         if not email:
             raise ValueError('Users must have an email address')
-
-        if not name:
-            raise ValueError('Users must have names')
+        if not username:
+            raise ValueError('Users must have a username')
 
         email = self.normalize_email(email)
-        name = name.strip()
-        user = self.model(name=name, email=email)
+        username = username.strip()
+        user = self.model(username=username, email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
-
         return user
 
-# Mô hình User (mở rộng AbstractUser)
+    def create_superuser(self, username, email, password=None, **extra_fields):
+        """Tạo superuser"""
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+
+        return self.create_user(username, email, password, **extra_fields)
+
+
 class User(AbstractUser):
-    name = models.CharField(max_length=255)
-    email = models.EmailField(unique=True)  # Đảm bảo email là duy nhất
+    email = models.EmailField(unique=True)   # Email duy nhất
     created_at = models.DateTimeField(auto_now_add=True)
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
+    USERNAME_FIELD = 'email'   # Đăng nhập bằng email
+    REQUIRED_FIELDS = ['username']   # Vẫn giữ username như một field phụ
 
     objects = UserManager()
 
     def __str__(self):
         return self.email
-    
+
     class Meta:
         db_table = 'users'
         indexes = [
